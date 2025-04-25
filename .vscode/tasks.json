@@ -1,0 +1,18 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build and Run",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "C:\\Users\\LENOVO\\Desktop\\gameproject\\MinGW\\bin\\g++.exe -g C:\\Users\\LENOVO\\Desktop\\gameproject\\src\\main.cpp -I C:\\Users\\LENOVO\\Desktop\\gameproject\\MinGW\\include -L C:\\Users\\LENOVO\\Desktop\\gameproject\\MinGW\\lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -o C:\\Users\\LENOVO\\Desktop\\gameproject\\main.exe && C:\\Users\\LENOVO\\Desktop\\gameproject\\main.exe & pause"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
