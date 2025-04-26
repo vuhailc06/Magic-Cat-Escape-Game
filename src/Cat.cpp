@@ -2,7 +2,6 @@
 
 Cat::Cat() {
     Health = 0;
-    Score = 0;
 }
 
 void Cat::setHealth(int p_h) {

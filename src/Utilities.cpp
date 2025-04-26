@@ -34,6 +34,17 @@ void SetColor(SDL_Renderer* renderer, SDL_Color color) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 }
 
+string toString(int num) {
+    string s = "";
+    while (num > 0) {
+        s += char(num % 10 + '0');
+        num /= 10;
+    }
+    while ((int)s.size() < 6) s += '0';
+    reverse(s.begin(), s.end());
+    return s;
+}
+
 bool detectRed(const vector<pair<int, int>> &points) {
     if ((int)(points.size()) == 0) return 0;
     for (auto p : points) if (abs(p.second - points[0].second) > 15) return 0;

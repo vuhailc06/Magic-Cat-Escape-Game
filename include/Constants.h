@@ -21,3 +21,5 @@ const SDL_Color greenColor = {0, 255, 0, 50};
 const SDL_Color blueColor = {0, 0, 255, 50};
 const SDL_Color yellowColor = {255, 255, 0, 255};
 const SDL_Color pinkColor = {255, 105, 180, 255};
+const SDL_Color blackColor = {0, 0, 0, 255};
+const SDL_Color transparent = {0, 0, 0, 0}; 

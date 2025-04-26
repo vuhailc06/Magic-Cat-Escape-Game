@@ -4,7 +4,7 @@
 
 class Cat : public Entity {
 private:
-    int Health, Score;
+    int Health;
 public:
     Cat();
     int getHealth();

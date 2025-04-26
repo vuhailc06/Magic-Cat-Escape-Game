@@ -5,12 +5,6 @@
 #include "Constants.h"
 #include "Utilities.h"
 
-#include<bits/stdc++.h>
-#include<SDL2/SDL.h>
-#include<SDL2/SDL_image.h>
-#include<SDL2/SDL_ttf.h>
-#include<SDL2/SDL_mixer.h>
-
 using namespace std;
 
 enum GameTextureName{
@@ -27,6 +21,7 @@ enum GameTextureName{
     AttackPackTexture,
     HeartTexture,
     BonusTexture,
+    FailureTexture,
     TotalGameTexutre
 };
 
@@ -47,7 +42,7 @@ Cat cat[TotalCatState];
 vector<Ghost> vecGhost;
 Ghost ghost;
 Entity attackPack, heart, bonusHeart;
-int lastMagic;
+int lastMagic, SCORE;
 
 Mix_Chunk* ghostDieSound, *swipeEffect;
 
@@ -111,9 +106,10 @@ void Game::loadMedia() {
     GameTexture[HeartTexture] = loadTexture("res/images/heart.png");
     GameTexture[BonusTexture] = loadTexture("res/images/bonusHeart.png");
     GameTexture[CastingHeartTexture] = loadTexture("res/images/castingHeart.png");
-
+    GameTexture[FailureTexture] = loadTexture("res/images/failure.png");
     //fonts
-    font = TTF_OpenFont("res/fonts/arial.ttf", 24);
+    font = TTF_OpenFont("res/fonts/arial.ttf", 40);
+    TTF_SetFontStyle(font, TTF_STYLE_BOLD);
     if (!font) {
         cout << "Failed to load font: " << TTF_GetError();
     }
@@ -269,7 +265,11 @@ void Game::gameUpdate() {
         }
         
         if (curGhost.getSize() > 0 && !drawing && !attacked && lastMagic == curGhost.getFirstSymbol()) {
-            if (lastMagic == Heart) cat[CatIdle].setHealth(min(5, cat[CatIdle].getHealth() + 1));
+            if (lastMagic == Heart) {
+                cat[CatIdle].setHealth(min(5, cat[CatIdle].getHealth() + 1));
+                SCORE += 10;
+            }
+            else SCORE += 5;
             curGhost.removeSymbol();
         }
 
@@ -319,6 +319,41 @@ void Game::gameUpdate() {
     }
 }
 
+SDL_Texture* Game::loadTextureFromText(string& p_text, TTF_Font* font, SDL_Color textColor) {
+    char* text = &p_text[0];
+    SDL_Surface* surfaceMessage = TTF_RenderText_Blended(font, text, textColor);
+    SDL_Texture* message = NULL;
+    message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+
+    if (message == NULL)
+        cout << "Failed to create texture from surface.";
+
+    SDL_FreeSurface(surfaceMessage);
+    return message;
+}
+
+void Game::renderText(double p_x, double p_y, string p_text, TTF_Font* font, SDL_Color textColor, SDL_Color backgroundColor) {
+    char* text = &p_text[0];
+    SDL_Surface* surfaceMessage = TTF_RenderText_Shaded(font, text, textColor, backgroundColor);
+    SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+
+    SDL_Rect src;
+    src.x = 0;
+    src.y = 0;
+    src.w = surfaceMessage->w;
+    src.h = surfaceMessage->h;
+
+    SDL_Rect dst;
+    dst.x = p_x;
+    dst.y = p_y;
+    dst.w = src.w;
+    dst.h = src.h;
+
+    SDL_RenderCopy(renderer, message, &src, &dst);
+    SDL_FreeSurface(surfaceMessage);
+    SDL_DestroyTexture(message);
+}
+
 void Game::render(SDL_Texture *p_tex) {
     // SDL_RenderCopyEx(renderer, p_tex, NULL, &dstR, 0, NULL, SDL_FLIP_HORIZONTAL);
     SDL_RenderCopy(renderer, p_tex, NULL, NULL);
@@ -337,12 +372,14 @@ void Game::render(Entity &p_entity, SDL_Rect src) {
 
 void Game::gameRender() {
     render(GameTexture[BackGroundTexture]);
+    renderText(SCREEN_WIDTH - 200, 10, toString(SCORE), font, blackColor, whiteColor);
 
     if (cat[CatIdle].getHealth() == 0) {
         render(cat[CatDie], cat[CatDie].getCurrentFrame());
         SDL_RenderPresent(renderer);
         return;
     }
+
     //cat
     if (drawing) {
         render(cat[Chanting], cat[Chanting].getCurrentFrame());

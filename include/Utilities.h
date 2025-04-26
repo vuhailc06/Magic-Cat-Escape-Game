@@ -12,6 +12,8 @@ void paintBrush(SDL_Renderer* renderer, int x, int y, int radius);
 
 void DrawSmoothStroke(SDL_Renderer* renderer, int x1, int y1, int x2, int y2, int radius);
 
+string toString(int num);
+
 void SetColor(SDL_Renderer* renderer, SDL_Color color);
 
 bool detectRed(const vector<pair<int, int>> &points);
