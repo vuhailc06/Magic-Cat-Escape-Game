@@ -20,7 +20,7 @@ Người chơi cần ấn phím "Enter" để có thể bắt đầu Game
   
 <img width ="1440" src="https://github.com/vuhailc06/Magic-Cat-Escape-Game/blob/master/res/preview/gameplay.png">
 
-- Mỗi quái vật sẽ chứa các kí hiệu ở trên đầu, và người chơi cần vẽ đúng các nét theo thứ tự từ trái sang phải.
+- Mỗi quái vật sẽ chứa các kí hiệu ở trên đầu, và người chơi cần vẽ đúng các nét theo thứ tự từ trái sang phải. Quái vật sẽ chết khi nó hết các kí hiệu.
 
 <img width ="500" src="https://github.com/vuhailc06/Magic-Cat-Escape-Game/blob/master/res/preview/ghost.png">
 
