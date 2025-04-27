@@ -1,5 +1,5 @@
 # Magic Cat Escape Game
-Game Demo: [Drive](https://drive.google.com/drive/folders/1y145l8k_fbSVxe4xHGGMzr8AVTDx0-fG?usp=drive_link)
+Giới thiệu về cấu trúc mã nguồn, thành phần chính và game demo: [Drive](https://drive.google.com/drive/folders/1y145l8k_fbSVxe4xHGGMzr8AVTDx0-fG?usp=drive_link)
 
 ## Giới thiệu Game
 Magic Cat là game được làm lại dựa trên game gốc Magic Cat Academy của Google. Người chơi vào vai một chú mèo ma thuật có khả năng tạo ra các phép thuật giúp tiêu diệt quái vật bằng việc vẽ các nét vẽ lên màn hình. Nhiệm vụ của bạn là tiêu diệt thật nhiều quái vật để đạt điểm số cao nhất có thể.
