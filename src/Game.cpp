@@ -7,6 +7,13 @@
 
 using namespace std;
 
+enum GameStateName {
+    GameOpenning,
+    GamePlaying,
+    GameEnding,
+    TotalGameState
+};
+
 enum GameTextureName{
     CatTexture,
     CatDieTexture,
@@ -22,6 +29,7 @@ enum GameTextureName{
     HeartTexture,
     BonusTexture,
     FailureTexture,
+    OpenningTexture,
     TotalGameTexutre
 };
 
@@ -42,7 +50,7 @@ Cat cat[TotalCatState];
 vector<Ghost> vecGhost;
 Ghost ghost;
 Entity attackPack, heart, bonusHeart;
-int lastMagic, SCORE;
+int lastMagic, SCORE, GameState;
 
 Mix_Chunk* ghostDieSound, *swipeEffect;
 
@@ -50,6 +58,7 @@ TTF_Font* font;
 
 Game::Game() {
     isRunning = 1;
+    GameState = GameOpenning;
     window = NULL;
     renderer = NULL;
 }
@@ -107,8 +116,9 @@ void Game::loadMedia() {
     GameTexture[BonusTexture] = loadTexture("res/images/bonusHeart.png");
     GameTexture[CastingHeartTexture] = loadTexture("res/images/castingHeart.png");
     GameTexture[FailureTexture] = loadTexture("res/images/failure.png");
+    GameTexture[OpenningTexture] = loadTexture("res/images/open2.png");
     //fonts
-    font = TTF_OpenFont("res/fonts/arial.ttf", 40);
+    font = TTF_OpenFont("res/fonts/arial.ttf", 42);
     TTF_SetFontStyle(font, TTF_STYLE_BOLD);
     if (!font) {
         cout << "Failed to load font: " << TTF_GetError();
@@ -117,7 +127,6 @@ void Game::loadMedia() {
     //musics
     Mix_Music* music = Mix_LoadMUS("res/sounds/backgroundsound.mp3");
     Mix_PlayMusic(music, -1);
-
     ghostDieSound = Mix_LoadWAV("res/sounds/diesound.wav");
     swipeEffect = Mix_LoadWAV("res/sounds/swipeeffect.wav");
 }
@@ -132,8 +141,7 @@ void Game::initEntity() {
     cat[Heart].init(GameTexture[CastingHeartTexture], 155, 155, 8, 60);
     cat[CatDie].init(GameTexture[CatDieTexture], 150, 150, 10, 100);
 
-    cat[CatIdle].setHealth(5);
-
+    cat[CatIdle].setHealth(CatHealth);
     cat[CatIdle].setX(SCREEN_WIDTH / 2); 
     cat[CatIdle].setY(SCREEN_HEIGHT / 2);
     for (int i = Chanting; i < TotalCatState; i++) {
@@ -163,11 +171,11 @@ void Game::spawnGhost() {
 
     int hard = RandNum(1, 1000);
     int numSymbol = RandNum(3, 6);
-    if (hard >= 900) numSymbol = 8;
+
     bool hasHeart = 0;
     for (int i = 0; i < numSymbol; i++) {
         int tmp = RandNum(1, 100);
-        if (tmp >= 95 && !hasHeart) {
+        if (tmp >= 97 && !hasHeart) {
             hasHeart = 1;
             newGhost.addSymbol(Heart);
         }
@@ -185,6 +193,11 @@ void Game::handleEvents() {
     if (event.type == SDL_QUIT) {
         isRunning = false;
         return;
+    };
+    if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_RETURN) {
+            GameState = GamePlaying;
+        }
     }
     if (event.type == SDL_MOUSEBUTTONDOWN) {
         if (event.button.button == SDL_BUTTON_LEFT) {
@@ -230,8 +243,16 @@ int Game::detectGesture() {
 }
 
 bool attacked = 0, playedSound;
+int spawnGhostTime;
 
 void Game::gameUpdate() {
+    if (GameState != GamePlaying) return;
+
+    if (SDL_GetTicks() - spawnGhostTime > spawnGhostDelay) {
+        spawnGhost();
+        spawnGhostTime = SDL_GetTicks();
+    }
+
     auto collision = [](int ghostX, int ghostY) -> bool {
         int catX = cat[CatIdle].getX(), catY = cat[CatIdle].getY();
         if (ghostX < catX) {
@@ -246,7 +267,10 @@ void Game::gameUpdate() {
     if (cat[CatIdle].getHealth() == 0) {
         Mix_HaltMusic();
         cat[CatDie].setFrameDelay(200);
-        if (cat[CatDie].getCur() >= 9) return;
+        if (cat[CatDie].getCur() >= 9) {
+            GameState = GameEnding;
+            return;
+        }
         cat[CatDie].update();
         return;
     }
@@ -266,7 +290,7 @@ void Game::gameUpdate() {
         
         if (curGhost.getSize() > 0 && !drawing && !attacked && lastMagic == curGhost.getFirstSymbol()) {
             if (lastMagic == Heart) {
-                cat[CatIdle].setHealth(min(5, cat[CatIdle].getHealth() + 1));
+                cat[CatIdle].setHealth(min(CatHealth, cat[CatIdle].getHealth() + 1));
                 SCORE += 10;
             }
             else SCORE += 5;
@@ -282,6 +306,7 @@ void Game::gameUpdate() {
             curGhost.setFrameDelay(100);
         } 
         if (curGhost.getCur() >= 7) {
+            SCORE += 20;
             vecGhost.erase(vecGhost.begin() + i);
         }  
     }
@@ -334,7 +359,8 @@ SDL_Texture* Game::loadTextureFromText(string& p_text, TTF_Font* font, SDL_Color
 
 void Game::renderText(double p_x, double p_y, string p_text, TTF_Font* font, SDL_Color textColor, SDL_Color backgroundColor) {
     char* text = &p_text[0];
-    SDL_Surface* surfaceMessage = TTF_RenderText_Shaded(font, text, textColor, backgroundColor);
+    // SDL_Surface* surfaceMessage = TTF_RenderText_Shaded(font, text, textColor, backgroundColor);
+    SDL_Surface* surfaceMessage = TTF_RenderText_Blended(font, text, textColor);
     SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
 
     SDL_Rect src;
@@ -355,7 +381,6 @@ void Game::renderText(double p_x, double p_y, string p_text, TTF_Font* font, SDL
 }
 
 void Game::render(SDL_Texture *p_tex) {
-    // SDL_RenderCopyEx(renderer, p_tex, NULL, &dstR, 0, NULL, SDL_FLIP_HORIZONTAL);
     SDL_RenderCopy(renderer, p_tex, NULL, NULL);
 }
 
@@ -371,9 +396,28 @@ void Game::render(Entity &p_entity, SDL_Rect src) {
 }
 
 void Game::gameRender() {
-    render(GameTexture[BackGroundTexture]);
-    renderText(SCREEN_WIDTH - 200, 10, toString(SCORE), font, blackColor, whiteColor);
+    //opening
+    if (GameState == GameOpenning) {
+        render(GameTexture[OpenningTexture]);
+        SDL_RenderPresent(renderer);
+        return;
+    }
+    //ending
+    if (GameState == GameEnding) {
+        render(GameTexture[FailureTexture]);
+        renderText(750, 200, "YOUR SCORE", font, blackColor, transparent);
+        renderText(800, 300, toString(SCORE), font, blackColor, transparent);
+        SDL_RenderPresent(renderer);
+        return;
+    }
 
+    //playing
+
+    //score
+    render(GameTexture[BackGroundTexture]);
+    renderText(SCREEN_WIDTH - 200, 10, toString(SCORE), font, whiteColor, whiteColor);
+
+    //cat die
     if (cat[CatIdle].getHealth() == 0) {
         render(cat[CatDie], cat[CatDie].getCurrentFrame());
         SDL_RenderPresent(renderer);
@@ -416,7 +460,7 @@ void Game::gameRender() {
 
     //heart
     int hx = 50, hy = 10;
-    for (int i = 1; i <= 5; i++) {
+    for (int i = 1; i <= CatHealth; i++) {
         heart.setX(hx);
         heart.setY(hy);
         if (i <= cat[CatIdle].getHealth()) render(heart, heart.getFrame(1));
@@ -435,14 +479,7 @@ void Game::cleanUp() {
     IMG_Quit;
 }
 
-int spawnGhostTime;
-int spawnGhostDelay = 2000;
-
 void Game::gameLoop() {
-    if (SDL_GetTicks() - spawnGhostTime > spawnGhostDelay) {
-        spawnGhost();
-        spawnGhostTime = SDL_GetTicks();
-    }
     clear();
     handleEvents();
     gameUpdate();
