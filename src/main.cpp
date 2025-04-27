@@ -11,12 +11,6 @@
 Game *game = new Game();
 
 int main(int argc, char* args[]) {
-    // vector<pair<int, int>> vec;
-    // pair<int, int> p;
-    // while (cin >> p.first >> p.second) {
-    //     vec.push_back(p);
-    // }
-    // cout<<detectYellow(vec);
     game->initSDL("vuhailc06", SCREEN_WIDTH, SCREEN_HEIGHT);
     game->loadMedia();
     game->initEntity();
