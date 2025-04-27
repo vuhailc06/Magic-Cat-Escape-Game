@@ -405,8 +405,8 @@ void Game::gameRender() {
     //ending
     if (GameState == GameEnding) {
         render(GameTexture[FailureTexture]);
-        renderText(750, 200, "YOUR SCORE", font, blackColor, transparent);
-        renderText(800, 300, toString(SCORE), font, blackColor, transparent);
+        renderText(750, 200, "YOUR SCORE", font, whiteColor, transparent);
+        renderText(800, 300, toString(SCORE), font, whiteColor, transparent);
         SDL_RenderPresent(renderer);
         return;
     }
