@@ -118,7 +118,7 @@ void Game::loadMedia() {
     GameTexture[FailureTexture] = loadTexture("res/images/failure.png");
     GameTexture[OpenningTexture] = loadTexture("res/images/open2.png");
     //fonts
-    font = TTF_OpenFont("res/fonts/arial.ttf", 42);
+    font = TTF_OpenFont("res/fonts/arial.ttf", 38);
     TTF_SetFontStyle(font, TTF_STYLE_BOLD);
     if (!font) {
         cout << "Failed to load font: " << TTF_GetError();
@@ -187,6 +187,14 @@ void Game::spawnGhost() {
 bool drawing = false;
 vector<pair<int, int>> points;
 
+void Game::resetGame() {
+    loadMedia();
+    initEntity();
+    vecGhost.clear();
+    cat[CatIdle].setHealth(CatHealth);
+    SCORE = 0;
+}   
+
 void Game::handleEvents() {
     SDL_Event event;
     SDL_PollEvent(&event);
@@ -197,6 +205,10 @@ void Game::handleEvents() {
     if (event.type == SDL_KEYDOWN) {
         if (event.key.keysym.sym == SDLK_RETURN) {
             GameState = GamePlaying;
+        }
+        if (event.key.keysym.sym == SDLK_r && GameState == GameEnding) {
+            resetGame();
+            GameState = GameOpenning;
         }
     }
     if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -407,6 +419,7 @@ void Game::gameRender() {
         render(GameTexture[FailureTexture]);
         renderText(750, 200, "YOUR SCORE", font, whiteColor, transparent);
         renderText(800, 300, toString(SCORE), font, whiteColor, transparent);
+        renderText(650, 400, "PRESS R TO PLAY AGAIN", font, whiteColor, transparent);
         SDL_RenderPresent(renderer);
         return;
     }

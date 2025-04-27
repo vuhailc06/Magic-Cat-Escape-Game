@@ -31,6 +31,7 @@ public:
     void gameRender();
     void cleanUp();
     void gameLoop();
+    void resetGame();
 
     int detectGesture();
     void spawnGhost();
